@@ -1,0 +1,51 @@
+1) @TrackTime is a custom annotation which prints logs for method execution time.
+I have a OrderService in Spring boot application.
+Which has printServiceName() which is private and applies @TrackTime. Will this works?
+
+RC:
+The short answer is no, the @TrackTime annotation will not work on a private method in a standard Spring Boot application.
+Spring handles annotations under the hood using the Proxy Pattern.
+
+Why it fails: The Proxy Pattern
+Spring doesn't actually add code to your classes.
+Instead, it creates a Proxy (a wrapper) around your bean.
+When another component calls a method on your OrderService, it is actually calling a method on the Proxy.
+The Proxy starts the timer, calls your real method, and then stops the timer.
+
+
+The "Visibility" Problem
+-----------------------
+CGLIB Proxies:
+-------------
+By default, Spring Boot uses CGLIB to create proxies by subclassing your OrderService.
+Since private methods are not visible to subclasses, the proxy cannot "override" or wrap them.
+
+Internal Calls:
+Even if the method were protected, if you call printServiceName() from another method inside the same class (e.g., createOrder() calls printServiceName()),
+the call stays inside the "real" object and never hits the Proxy.
+This is known as Self-Invocation.
+***Note: We have already faced this issue while calling @Transactional on methodA() methodB() from same class. methodA() call methodB(0 directly, it wont call through APO proxy.
+
+Fixes:
+ 1) Change visibility of method from private to public
+ 2) Move the logic to helper class.
+ 3) Switch from Spring AOP to AspectJ
+ *** AspectJ uses "Compile-time" or "Load-time" weaving, which modifies the actual bytecode of your class rather than using a Proxy.
+ This is more powerful but significantly more complex to configure.
+ 4) Manual Execution (The "Quick & Dirty"): Not recommended
+
+ private void printServiceName() {
+     StopWatch sw = new StopWatch();
+     sw.start();
+     // ... logic ...
+     sw.stop();
+     log.info("Execution time: {} ms", sw.getTotalTimeMillis());
+ }
+
+
+
+
+
+
+
+
