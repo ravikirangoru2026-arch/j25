@@ -1,0 +1,32 @@
+1) Identify the code smell and provide fix.
+Optional<User> user = userRepository.findById(id);
+if (user.isPresent()) {
+    return user.get().getEmail();
+} else {
+    return "unknown"; //
+}
+
+1. isPresent() + get() anti-pattern — defeats the entire purpose of Optional. It's just a verbose null-check.
+2. user.get() without guard is risky — if someone refactors the if away, NoSuchElementException at runtime.
+3. Verbose & imperative — Optional API provides declarative methods purpose-built for this exact pattern.
+
+
+// ✅ FIX 1 — map() + orElse() — most idiomatic
+return userRepository.findById(id)
+        .map(User::getEmail)
+        .orElse("unknown");
+
+
+2) Identify the code smell and provide fix.
+
+// ❌ BAD — NPE if getEmail() returns null
+   Optional<String> email = Optional.of(user.getEmail());
+
+// ✅ ofNullable — safe, returns Optional.empty() if null
+Optional<String> email = Optional.ofNullable(user.getEmail());
+
+// ✅ No intermediate Optional variable — clean pipeline
+String email = Optional.ofNullable(user)
+        .map(User::getEmail)                          // null-safe
+        .filter(e -> !e.isBlank())                    // guard empty string
+        .orElse("unknown");

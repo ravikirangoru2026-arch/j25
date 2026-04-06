@@ -1,0 +1,40 @@
+2) You have a OrderService and while application is up and running application is passes for 2 to 3 seconds.
+What would be the problem
+
+OrderService Pause / Freeze (2-3 seconds) —
+Root Cause AnalysisA 2-3 second pause in a running application is a classic latency spike problem.
+
+#1 — JVM Garbage Collection (Stop-The-World)
+All application threads are paused while GC runs → 2-3s freeze
+
+Indicators:
+    GC logs show Stop-The-World pauses
+    Heap usage spikes before pause, drops after
+    Happens periodically (not on every request)
+
+Fix:
+# Switch to G1GC (default Java 9+) or ZGC (Java 15+) for low-latency
+-XX:+UseG1GC
+-XX:MaxGCPauseMillis=200   # Target max pause
+
+# Or ZGC for sub-millisecond pauses (Java 21 LTS recommended)
+-XX:+UseZGC
+
+#2  Database Connection Pool Exhaustion
+Request waits for available connection from pool → blocks 2-3s
+
+#3 — Kafka Consumer / Producer Blocking
+If OrderService publishes or consumes Kafka events:
+Producer metadata refresh, broker rebalance, or
+consumer poll blocking thread → 2-3s stall
+
+#4 @Transactional Long-Running / Lock Contention
+DB row/table lock held too long → other threads queue up → 2-3s wait
+
+#5 Thread Pool Starvation (Tomcat/Async Executors)
+All worker threads busy → new requests queue → visible as pause
+
+
+
+
+

@@ -1,0 +1,100 @@
+3) You have an InventoryService wich has HashMap<String, Number> serviceHitsMap;
+But while accessing serviceHitsMap and updating it, it seems someday inconsistency.
+What is the root cause and probable/recommended  fixes?
+
+HashMap Data Inconsistency in InventoryService — Root Cause & Fix
+
+HashMap is not thread-safe.
+In a Spring Service (singleton by default), multiple threads concurrently read/write serviceHitsMap → race conditions.
+
+@Service
+public class InventoryService {
+
+    // ❌ PROBLEM: Shared mutable state — not thread-safe
+    private HashMap<String, Number> serviceHitsMap = new HashMap<>();
+
+    public void recordHit(String serviceKey) {
+        Number count = serviceHitsMap.get(serviceKey);     // Thread-1 reads: 5
+        serviceHitsMap.put(serviceKey, count.intValue() + 1); // Thread-2 reads: 5
+        // Both write 6 — one update LOST
+    }
+}
+
+
+✅ Fix 1 — ConcurrentHashMap + AtomicInteger (Recommended)
+@Service
+public class InventoryService {
+
+    // ✅ Thread-safe map + atomic counters
+    private final ConcurrentHashMap<String, AtomicInteger> serviceHitsMap
+                                         = new ConcurrentHashMap<>();
+
+    public void recordHit(String serviceKey) {
+        // computeIfAbsent is atomic — no race on initialization
+        serviceHitsMap
+            .computeIfAbsent(serviceKey, k -> new AtomicInteger(0))
+            .incrementAndGet(); // ← Atomic increment, no lost updates
+    }
+
+    public int getHits(String serviceKey) {
+        AtomicInteger counter = serviceHitsMap.get(serviceKey);
+        return counter != null ? counter.get() : 0;
+    }
+
+    public Map<String, Integer> getAllHits() {
+        Map<String, Integer> snapshot = new HashMap<>();
+        serviceHitsMap.forEach((k, v) -> snapshot.put(k, v.get()));
+        return snapshot;
+    }
+}
+ConcurrentHashMap uses segment-level locking (Java 8+: CAS + bin-level sync)
+AtomicInteger.incrementAndGet() is a single atomic CPU instruction (no lock needed)
+computeIfAbsent is atomic — prevents duplicate key initialization
+
+
+✅ Fix 2 — ConcurrentHashMap.merge() (Cleaner, Java 8+)
+@Service
+public class InventoryService {
+
+    private final ConcurrentHashMap<String, Integer> serviceHitsMap
+                                         = new ConcurrentHashMap<>();
+
+    public void recordHit(String serviceKey) {
+        // merge() is atomic — handles init + increment in one step
+        serviceHitsMap.merge(serviceKey, 1, Integer::sum);
+    }
+
+    // Safe iteration — ConcurrentHashMap snapshot semantics
+    public void printAllHits() {
+        serviceHitsMap.forEach((key, count) ->
+            log.info("Service: {}, Hits: {}", key, count)
+        );
+    }
+}
+
+✅ Fix 3 — LongAdder for High-Contention Counters (Best throughput)
+
+@Service
+public class InventoryService {
+
+    // LongAdder beats AtomicInteger under HIGH contention
+    private final ConcurrentHashMap<String, LongAdder> serviceHitsMap
+                                         = new ConcurrentHashMap<>();
+
+    public void recordHit(String serviceKey) {
+        serviceHitsMap
+            .computeIfAbsent(serviceKey, k -> new LongAdder())
+            .increment(); // Internally stripes counters across CPU cores
+    }
+
+    public long getHits(String serviceKey) {
+        LongAdder adder = serviceHitsMap.get(serviceKey);
+        return adder != null ? adder.sum() : 0L;
+    }
+}
+
+
+
+
+
+

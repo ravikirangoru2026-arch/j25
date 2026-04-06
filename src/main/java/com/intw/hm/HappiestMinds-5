@@ -1,0 +1,234 @@
+1) Code Smells & Design Pattern Fix
+// ❌ BAD
+public void send(Notification n) {
+    if (n.getChannel().equals("EMAIL")) { sendEmail(n); }
+    else if (n.getChannel().equals("SMS")) { sendSMS(n); }
+    else if (n.getChannel().equals("PUSH")) { sendPush(n); }
+}
+
+smell:
+1) if-else chain on type/channel: Open/Closed Principle — adding new channel = modify existing code
+2) Magic strings "EMAIL", "SMS": Typo-prone, no compile-time safety
+3) Single class owns all send logic: Single Responsibility Principle
+4) Not extensible: Adding WHATSAPP requires touching this method
+5) No null check on getChannel(): NPE risk
+
+Recommended Design — Strategy + Factory Pattern
+Step 1 — Replace Magic Strings with Enum
+public enum NotificationChannel {
+    EMAIL, SMS, PUSH, WHATSAPP  // ✅ compile-time safe, extensible
+}
+
+Step 2 — Strategy Interface
+java// Strategy contract — each channel implements this
+public interface NotificationSender {
+    void send(Notification notification);
+    NotificationChannel supportedChannel();
+}
+
+Step 3 — Concrete Strategies (One per channel)
+java@Component
+public class EmailNotificationSender implements NotificationSender {
+
+    @Override
+    public void send(Notification notification) {
+        log.info("Sending EMAIL to {}", notification.getRecipient());
+        // SMTP / SES logic here
+    }
+
+    @Override
+    public NotificationChannel supportedChannel() {
+        return NotificationChannel.EMAIL;
+    }
+}
+
+@Component
+public class SmsNotificationSender implements NotificationSender {
+
+    @Override
+    public void send(Notification notification) {
+        log.info("Sending SMS to {}", notification.getRecipient());
+        // Twilio / SNS logic here
+    }
+
+    @Override
+    public NotificationChannel supportedChannel() {
+        return NotificationChannel.SMS;
+    }
+}
+
+@Component
+public class PushNotificationSender implements NotificationSender {
+
+    @Override
+    public void send(Notification notification) {
+        log.info("Sending PUSH to {}", notification.getRecipient());
+        // FCM / APNs logic here
+    }
+
+    @Override
+    public NotificationChannel supportedChannel() {
+        return NotificationChannel.PUSH;
+    }
+}
+
+Step 4 — Factory to resolve Strategy
+java@Component
+public class NotificationSenderFactory {
+
+    private final Map<NotificationChannel, NotificationSender> senderMap;
+
+    // ✅ Spring auto-injects all NotificationSender implementations
+    public NotificationSenderFactory(List<NotificationSender> senders) {
+        this.senderMap = senders.stream()
+                .collect(Collectors.toMap(
+                        NotificationSender::supportedChannel,
+                        Function.identity()
+                ));
+    }
+
+    public NotificationSender resolve(NotificationChannel channel) {
+        return Optional.ofNullable(senderMap.get(channel))
+                .orElseThrow(() -> new UnsupportedOperationException(
+                        "No sender registered for channel: " + channel));
+    }
+}
+
+Step 5 — Clean NotificationService (Zero if-else)
+java@Service
+@Slf4j
+public class NotificationService {
+
+    private final NotificationSenderFactory senderFactory;
+
+    public NotificationService(NotificationSenderFactory senderFactory) {
+        this.senderFactory = senderFactory;
+    }
+
+    // ✅ No if-else — fully closed for modification, open for extension
+    public void send(Notification notification) {
+        Assert.notNull(notification, "Notification must not be null");
+        Assert.notNull(notification.getChannel(), "Channel must not be null");
+
+        senderFactory
+                .resolve(notification.getChannel())
+                .send(notification);
+    }
+}
+
+Adding a New Channel — Zero existing code changes
+java// ✅ Just add new class — nothing else touched
+@Component
+public class WhatsAppNotificationSender implements NotificationSender {
+
+    @Override
+    public void send(Notification notification) {
+        log.info("Sending WHATSAPP to {}", notification.getRecipient());
+        // WhatsApp Business API logic
+    }
+
+    @Override
+    public NotificationChannel supportedChannel() {
+        return NotificationChannel.WHATSAPP;
+    }
+}
+
+Spring auto-discovers it, factory auto-registers it. Zero changes to existing code.
+
+Followup question:
+
+=================
+How encryption for sensitive data (like mobile numbers) within above design ?
+=================
+To integrate encryption for sensitive data (like mobile numbers) within your existing Strategy and Factory architecture,
+you should focus on Separation of Concerns. You don't want your encryption logic scattered across every NotificationSender.
+
+Here is the recommended design using the Decorator Pattern and the Proxy Pattern concepts.
+
+The Decorator Pattern is perfect here.
+-------------------------------------
+It allows you to wrap your existing SmsNotificationSender with a "Logging Decorator" that handles the encryption/masking logic before the actual sending happens.
+This keeps your business logic (sending) separate from your security logic (encryption).
+
+Single Responsibility: The SmsNotificationSender only cares about Twilio/SNS.
+The Decorator only cares about PII (Personally Identifiable Information) security.
+
+Transparency: The NotificationService doesn't even know the data is being encrypted for logs; it just calls .send().
+
+Implementation Steps:
+Step 1: Create an Encryption Utility
+First, define a service to handle the heavy lifting.
+In a production environment, this would interface with AWS KMS, Azure Key Vault, or HashiCorp Vault.
+
+@Service
+public class EncryptionService {
+    // In reality, use a library like AES-256 or a Vault provider
+    public String encrypt(String plainText) {
+        return Base64.getEncoder().encodeToString(plainText.getBytes());
+    }
+}
+
+Step 2: Create the Logging Decorator
+Instead of modifying SmsNotificationSender.java, create a decorator.
+Note the @Primary or @Qualifier usage to ensure Spring knows which one to use.
+
+@Component
+@Primary // Tells the Factory to pick this over the raw implementation
+@RequiredArgsConstructor
+public class SecureSmsNotificationSender implements NotificationSender {
+
+    private final SmsNotificationSender originalSender; // The real sender
+    private final EncryptionService encryptionService;
+
+    @Override
+    public void send(Notification notification) {
+        // 1. Secure the data for logging
+        String rawMobile = notification.getRecipient();
+        String encryptedMobile = encryptionService.encrypt(rawMobile);
+
+        log.info("Sending SMS to encrypted recipient: {}", encryptedMobile);
+
+        // 2. Delegate to the actual sender for the real API call
+        originalSender.send(notification);
+    }
+
+    @Override
+    public NotificationChannel supportedChannel() {
+        return NotificationChannel.SMS;
+    }
+}
+
+
+Alternative: Aspect-Oriented Programming (AOP)
+---------------------------------------------
+f you want to apply encryption across multiple channels (SMS, WhatsApp, etc.) without writing multiple decorators, use AOP (Proxy Pattern).
+This is the "cleanest" way to handle cross-cutting concerns like logging and security.
+
+Step 1: Create a Custom Annotation
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface SecureLog { }
+
+Step 2: Create the Aspect
+@Aspect
+@Component
+public class LoggingAspect {
+
+    @Autowired
+    private EncryptionService encryptionService;
+
+    @Before("@annotation(SecureLog) && args(notification)")
+    public void encryptLog(Notification notification) {
+        String encrypted = encryptionService.encrypt(notification.getRecipient());
+        log.info("Secure Transaction Initiated for: {}", encrypted);
+    }
+}
+
+Step 3: Apply to Strategies
+@Override
+@SecureLog // Just drop this on any method you want to protect
+public void send(Notification notification) {
+    // Logic...
+}
+
+

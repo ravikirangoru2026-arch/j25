@@ -1,0 +1,87 @@
+1) Spring @Transactional Self-Invocation Problem
+Description: A service has 2 methods with @Transactional on it. methodA() and methodB().
+methodA() call methodB() in it.
+@Service
+public class MyService {
+
+    @Transactional  // Transaction T1 starts via proxy
+    public void methodA() {
+        // ... some logic
+        this.methodB(); // ← PROBLEM: 'this' = raw object, not proxy
+                        // methodB runs in T1's context, NOT a new transaction
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void methodB() {
+        // EXPECTS: Suspend T1, start new T2
+        // REALITY: Still running in T1 — REQUIRES_NEW is ignored
+    }
+}
+-------------
+RC & Solution
+-------------
+RC: Spring @Transactional works via AOP proxies (JDK Dynamic Proxy or CGLIB).
+The proxy wraps the bean and intercepts calls.
+But self-invocation (this.methodB()) bypasses the proxy entirely — PROPAGATION_REQUIRES_NEW on methodB() never triggers a new transaction.
+
+Solution: Fix-1, Fix-2 and Fix-3
+
+✅ Fix 1: Self-Injection (Simplest — Spring 4.3+): Inject the bean itself so the call goes through the proxy.
+@Service
+public class MyService {
+
+    @Autowired
+    private MyService self; // Spring injects the proxy
+
+    @Transactional
+    public void methodA() {
+        self.methodB(); // ← Goes through proxy, REQUIRES_NEW honored
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void methodB() {
+        // T1 suspended, new T2 starts — correct behavior
+    }
+}
+
+
+✅ Fix 2: Extract to a Separate Bean (Recommended for Clean Architecture)
+java
+@Service
+public class MyServiceA {
+
+    @Autowired
+    private MyServiceB myServiceB;
+
+    @Transactional
+    public void methodA() {
+        myServiceB.methodB(); // ← External call through proxy — correct
+    }
+}
+
+@Service
+public class MyServiceB {
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void methodB() {
+        // Properly runs in a new independent transaction
+    }
+}
+
+This is the cleanest and most production-preferred approach — better separation of concerns, no circular dependencies.
+
+✅ Fix 3: Fetch Proxy via AopContext (When refactoring isn't feasible)
+java
+@Service
+public class MyService {
+
+    @Transactional
+    public void methodA() {
+        ((MyService) AopContext.currentProxy()).methodB(); // Explicit proxy call
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void methodB() { }
+}
+Requires @EnableAspectJAutoProxy(exposeProxy = true)
+
