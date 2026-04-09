@@ -1,0 +1,15 @@
+II) Structural Patterns (7 patterns):
+
+1. Adapter: Adapter design pattern is a structural pattern that converts the interface of a class into another interface that clients expect, enabling incompatible classes to work together seamlessly. It acts as a bridge between legacy systems and new code without modifying either.
+2. Bridge: Bridge pattern separates an abstraction from its implementation so that both can vary independently. Instead of tightly coupling abstraction and implementation, the Bridge pattern connects them using composition.
+3. Composite:
+4. Decorator : Decorator design pattern is a structural pattern that enables dynamic addition of new responsibilities or behaviors to objects at runtime without modifying their code, using composition over inheritance. It follows the open-closed principle by allowing extension through wrapper classes.
+
+5. Facade:
+6. Proxy : Proxy design pattern is a structural pattern that provides a surrogate or placeholder for another object to control access to it, adding features like lazy loading, caching, security checks, or remote access without altering the original object.
+7. Flyweight:
+
+
+
+*** Adapter converts incompatible interfaces for collaboration, while Decorator adds new behaviors to compatible objects dynamically.
+

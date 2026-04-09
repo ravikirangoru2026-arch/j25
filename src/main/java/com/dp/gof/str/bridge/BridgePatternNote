@@ -1,0 +1,70 @@
+Bridge design pattern: It  decouples an abstraction from its implementation using composition, allowing both to vary independently and preventing class explosion from inheritance combinations.
+
+JdbsTemplate + DataSources: JdbcTemplate (abstraction) works with any DataSource (HikariCP, DBCP, DriverManager) implementation. Switch connection pools without changing DAO code.
+
+MessageSenders: Spring abstractions like SimpleMailMessage use Email, SMS, or Slack sender implementations interchangeably.
+
+
+Java Implementation: Video Encoder Example
+
+Step 1: Implementor interface (implementation hierarchy).
+interface VideoEncoder {
+    void encode(String filename);
+}
+
+Step 2: Concrete implementors.
+class MPEGEncoder implements VideoEncoder {
+    public void encode(String filename) {
+        System.out.println("Encoding " + filename + " to MPEG format");
+    }
+}
+class VP8Encoder implements VideoEncoder {
+    public void encode(String filename) {
+        System.out.println("Encoding " + filename + " to VP8 format");
+    }
+}
+
+Step 3: Abstraction with implementor reference.
+abstract class VideoTranscoder {
+    protected VideoEncoder encoder;
+
+    public VideoTranscoder(VideoEncoder encoder) {
+        this.encoder = encoder;
+    }
+}
+
+Step 4: Refined abstractions (abstraction hierarchy).
+class HighQualityTranscoder extends VideoTranscoder {
+    public HighQualityTranscoder(VideoEncoder encoder) {
+        super(encoder);
+    }
+
+    public void transcode(String filename) {
+        System.out.print("High quality ");
+        encoder.encode(filename);
+    }
+}
+class LowQualityTranscoder extends VideoTranscoder {
+    public LowQualityTranscoder(VideoEncoder encoder) {
+        super(encoder);
+    }
+
+    public void transcode(String filename) {
+        System.out.print("Low quality ");
+        encoder.encode(filename);
+    }
+}
+
+Step 5: Client usage - mix and match independently.
+public class BridgeDemo {
+    public static void main(String[] args) {
+        // 4 combinations without 4 classes!
+        VideoTranscoder t1 = new HighQualityTranscoder(new MPEGEncoder());
+        t1.transcode("video1.mp4");  // High quality Encoding video1.mp4 to MPEG format
+
+        VideoTranscoder t2 = new LowQualityTranscoder(new VP8Encoder());
+        t2.transcode("video2.mp4");  // Low quality Encoding video2.mp4 to VP8 format
+    }
+}
+
+*** This scales to N abstractions × M implementations = NM combinations without subclass explosion.

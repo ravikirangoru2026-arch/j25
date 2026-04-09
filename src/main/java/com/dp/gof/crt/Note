@@ -1,0 +1,16 @@
+I. Creational Patterns (5 patterns)
+Creational Design Patterns deal with how objects are created in an application.
+Instead of creating objects directly using new, these patterns provide flexible and controlled ways to instantiate objects.
+
+They are needed & help to:
+    Control object creation
+    Reduce tight coupling
+    Improve code flexibility
+    Hide creation logic from the client
+
+1) Singleton: it ensures that a class has only one instance and provide a global access point to it.
+Ex: Loggers, Database Connection Pool, Config Manager, Cache, Thread Pool.. etc.
+2) Factory Method
+3) Abstract Factory
+4) Builder
+5) Prototype

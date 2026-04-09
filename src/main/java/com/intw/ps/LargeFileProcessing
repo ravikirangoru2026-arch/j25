@@ -1,0 +1,62 @@
+1) How can you process large file in java?
+Processing a 1 GB file in Java requires a memory-efficient approach.
+
+i) Buffered Streaming (Line by Line):
+    BufferedReader reads small chunks into memory
+    Only one line at a time is processed
+    Memory usage stays very low even for huge files
+
+        String filePath = "largefile.txt";
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                // Process each line
+                processLine(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        private static void processLine(String line) {
+        // Example processing
+        System.out.println(line);
+        }
+
+
+ii) Faster Approach: Java NIO (Recommended for Very Large Files)
+    Uses lazy loading
+    Supports parallel processing
+    Uses modern NIO API
+
+        Path path = Path.of("largefile.txt");
+        try (Stream<String> lines = Files.lines(path)) {
+            lines.forEach(line -> processLine(line));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        private static void processLine(String line) {
+                System.out.println(line);
+        }
+
+iii) Very High Performance Method: FileChannel + ByteBuffer: huge files (GBs / TBs).
+
+       RandomAccessFile file = new RandomAccessFile("largefile.txt", "r");
+       FileChannel channel = file.getChannel();
+       ByteBuffer buffer = ByteBuffer.allocate(1024);
+       while (channel.read(buffer) > 0)
+       {
+            buffer.flip();
+            while (buffer.hasRemaining()) {
+                 System.out.print((char) buffer.get());
+            }
+            buffer.clear();
+       }
+       channel.close();
+       file.close();
+
+*** This reads 1 KB chunks at a time.
+
+iv) If Processing Can Be Parallel (Faster): You can use parallel streams. Use only if processing is CPU intensive.
+        Files.lines(Path.of("largefile.txt"))
+            .parallel()
+            .forEach(line -> processLine(line));

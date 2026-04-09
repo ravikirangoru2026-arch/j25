@@ -1,0 +1,60 @@
+Decorator : is a structural design patterns which is to Add new behaviors or enhance functionality dynamically without subclassing.
+    Client assembles the wrapper chain
+    Multiple decorators stackable
+
+*** Spring and Spring Boot implement the Decorator pattern primarily through dynamic proxies and Aspect-Oriented Programming (AOP), allowing runtime wrapping of beans with additional behaviors like logging or caching without altering core classes.
+*** Spring AOP uses JDK dynamic proxies (or CGLIB) to create decorator-like wrappers around beans. Aspects act as decorators, intercepting method calls to add cross-cutting concerns such as transactions, security, or metrics. This stacks behaviors dynamically based on annotations like @Transactional or @Cacheable.
+*** Implement BeanPostProcessor to wrap beans post-instantiation.
+*** Scoped Proxies: For prototype or request-scoped beans injected into singleton beans, Spring creates proxy decorators (@Scope("prototype", proxyMode = ScopedProxyMode.TARGET_CLASS)) to manage lifecycle and scope mismatches dynamically.
+*** Custom Decorator Wiring: Use @Service and ordered @Primary or qualifiers to chain service implementations. For example, wrap a core service with logging or validation decorators in configuration
+
+
+
+Implementation: Decorator lets you wrap a coffee object with condiments, adding features at runtime.
+
+Step 1: Define the component interface.
+public interface Coffee {
+    double cost();
+    String description();
+}
+
+Step 2: Concrete component (base object).
+public class SimpleCoffee implements Coffee {
+    public double cost() { return 5.0; }
+    public String description() { return "Simple Coffee"; }
+}
+
+Step 3: Abstract decorator (holds reference to component).
+abstract class CoffeeDecorator implements Coffee {
+    protected Coffee coffee;
+    public CoffeeDecorator(Coffee coffee) { this.coffee = coffee; }
+    public double cost() { return coffee.cost(); }
+    public String description() { return coffee.description(); }
+}
+
+Step 4: Concrete decorators (add behavior).
+class MilkDecorator extends CoffeeDecorator {
+    public MilkDecorator(Coffee coffee) { super(coffee); }
+    public double cost() { return super.cost() + 2.0; }
+    public String description() { return super.description() + ", Milk"; }
+}
+
+class SugarDecorator extends CoffeeDecorator {
+    public SugarDecorator(Coffee coffee) { super(coffee); }
+    public double cost() { return super.cost() + 1.0; }
+    public String description() { return super.description() + ", Sugar"; }
+}
+
+Step 5: Client usage (stack decorators).
+public class DecoratorDemo {
+    public static void main(String[] args) {
+        Coffee coffee = new SimpleCoffee();
+        System.out.println(coffee.description() + " $" + coffee.cost());  // Simple Coffee $5.0
+
+        coffee = new MilkDecorator(coffee);
+        coffee = new SugarDecorator(coffee);
+        System.out.println(coffee.description() + " $" + coffee.cost());  // Simple Coffee, Milk, Sugar $8.0
+    }
+}
+
+*** This builds enhanced objects transparently, following open-closed principle.

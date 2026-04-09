@@ -1,0 +1,100 @@
+** Garbage Collection (GC) in Java is a memory management mechanism that automatically removes objects that are no longer used by the program, freeing heap memory.
+1) How Garbage Collection Works in Java
+In Java, objects are created in the Heap Memory.
+When objects are no longer referenced by any part of the program, they become eligible for garbage collection.
+
+class Test {
+    public static void main(String[] args) {
+        Test obj = new Test(); // object created
+        obj = null;            // reference removed
+    }
+}
+
+Java Memory Structure (Heap): The Java heap is divided into generations:
+Heap Memory
+------------
+Young Generation
+   |-- Eden
+   |-- Survivor S0
+   |-- Survivor S1
+
+Old Generation
+   |-- Long-lived objects
+
+Metaspace
+   |-- Class metadata
+
+Workflow
+    Objects are created in Eden space.
+    If they survive garbage collection, they move to Survivor spaces.
+    Long-lived objects move to the Old Generation.
+    GC periodically removes unreachable objects.
+
+Types of Garbage Collection
+  1) Minor GC
+    Cleans Young Generation
+    Fast
+    Happens frequently
+  2) Major GC / Full GC
+    Cleans Old Generation
+    Slower
+    Can cause Stop-The-World pauses
+
+
+
+
+Important Garbage Collectors in Modern Java
+Java provides multiple collectors:
+    1) Serial GC
+    2) Parallel GC
+    3) CMS (deprecated)
+    4) G1 Garbage Collector
+    5) Z Garbage Collector
+Currently G1 and ZGC are widely used.
+
+G1 Garbage Collector (Garbage First): G1 GC was introduced to handle large heaps with predictable pauses.
+*** Instead of fixed generations, G1 divides heap into small regions.
+Heap
+---------------------------------
+| R1 | R2 | R3 | R4 | R5 | R6 |
+---------------------------------
+Some regions contain:
+    Young objects
+    Old objects
+
+How G1 Works
+    Heap divided into regions (1–32MB).
+    GC identifies regions with most garbage.
+    Cleans those regions first (Garbage First).
+    Performs incremental collection.
+Advantages
+    ✔ Predictable pause times [~50–200 ms]
+    ✔ Works well for large heaps (4GB+)
+    ✔ Default GC since Java 9
+
+Disadvantages
+    ❌ Slightly higher CPU usage
+    ❌ Not the lowest latency
+
+
+ZGC (Z Garbage Collector)
+    ZGC is designed for extremely low latency applications.
+    Goal: Pause time < 10 milliseconds even for huge heaps.
+
+Key Features
+    Concurrent GC
+    Colored pointers
+    Load barriers
+*** Most work happens while the application is running.
+
+ZGC Workflow
+    Mark objects concurrently
+    Relocate objects concurrently
+    Update references with minimal pause
+
+Pause time is almost constant, regardless of heap size.
+
+
+
+
+

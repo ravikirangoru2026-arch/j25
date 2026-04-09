@@ -1,0 +1,40 @@
+Adapter design pattern: is a structural pattern that allows incompatible interfaces to work together. It acts as a bridge between two incompatible interfaces by converting one interface into another that the client expects.
+Ex: Power adapter
+Ex: HandlerInterceptorAdapter , JpaVendorAdapter , MessageListenerAdapter ...
+
+Java Implementation: Payment Gateway Adapter
+
+
+Step 1: Target interface (what client expects).
+public interface PaymentProcessor {
+    void processPayment(double amount);
+}
+
+Step 2: Adaptee (legacy incompatible system).
+public class LegacyPayPalGateway {
+    public void sendPayment(double amount, String currency) {
+        System.out.println("Legacy PayPal: Sending $" + amount + " " + currency);
+    }
+}
+
+
+Step 3: Adapter (bridges interfaces via composition).
+public class PayPalAdapter implements PaymentProcessor {
+    private LegacyPayPalGateway payPal;
+
+    public PayPalAdapter(LegacyPayPalGateway payPal) {
+        this.payPal = payPal;
+    }
+
+    public void processPayment(double amount) {
+        payPal.sendPayment(amount, "USD");  // Translate call
+    }
+}
+
+Step 4: Client uses target interface unaware of adaptee.
+public class PaymentDemo {
+    public static void main(String[] args) {
+        PaymentProcessor processor = new PayPalAdapter(new LegacyPayPalGateway());
+        processor.processPayment(100.0);  // Output: Legacy PayPal: Sending $100.0 USD
+    }
+}
