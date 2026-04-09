@@ -1,5 +1,5 @@
 3) You have an InventoryService wich has HashMap<String, Number> serviceHitsMap;
-But while accessing serviceHitsMap and updating it, it seems someday inconsistency.
+But while accessing serviceHitsMap and updating it, it seems somedata inconsistency.
 What is the root cause and probable/recommended  fixes?
 
 HashMap Data Inconsistency in InventoryService — Root Cause & Fix
