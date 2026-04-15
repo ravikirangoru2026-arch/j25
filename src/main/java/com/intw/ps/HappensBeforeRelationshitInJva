@@ -1,0 +1,59 @@
+Happens-Before Relationship in Java:?
+-------------------------------------
+The happens-before relationship is a memory visibility guarantee defined by the Java Memory Model (JMM).
+It ensures that writes by one thread are visible to reads by another thread in a predictable order.
+
+If action A happens-before action B, then all effects of A are guaranteed to be visible to B.
+
+Why It Exists
+Modern CPUs and compilers reorder instructions for performance.
+Without explicit guarantees, one thread may never see updates made by another thread — leading to stale reads,
+race conditions, and subtle bugs.
+
+Happens-Before Rules (JMM Guarantees)
+-------------------------------------
+1. Program Order Rule
+Within a single thread, each action happens-before the next one.
+int a = 5;   // happens-before
+int b = a;   // this read
+
+
+2. Monitor Lock Rule (synchronized)
+An unlock of a monitor happens-before every subsequent lock of the same monitor.
+synchronized(lock) { x = 10; }  // unlock happens-before
+synchronized(lock) { use(x); }  // next lock — x = 10 is visible
+
+3. Volatile Variable Rule
+A write to a volatile field happens-before every subsequent read of that field.
+volatile boolean ready = false;
+volatile int value = 0;
+
+// Thread A
+value = 42;
+ready = true;  // volatile write
+
+// Thread B
+if (ready) {         // volatile read
+    use(value);      // guaranteed to see 42
+}
+
+4. Thread Start Rule
+Thread.start() happens-before any action in the started thread.
+int x = 100;
+Thread t = new Thread(() -> System.out.println(x)); // sees x = 100
+t.start(); // happens-before thread body
+
+5. Thread Join Rule
+All actions in a thread happen-before Thread.join() returns.
+thread.join(); // happens-before
+use(result);   // result written inside thread is visible here
+
+6. Thread Interruption Rule
+A call to interrupt() happens-before the interrupted thread detects the interruption.
+
+7. Finalizer Rule
+Object constructor completion happens-before the start of its finalize().
+
+8. Transitivity
+If A happens-before B and B happens-before C, then A happens-before C.
+

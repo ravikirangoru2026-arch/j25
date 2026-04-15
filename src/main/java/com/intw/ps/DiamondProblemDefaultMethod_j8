@@ -1,0 +1,113 @@
+Diamond Problem in Java
+=======================
+The Diamond Problem occurs in multiple inheritance when a class inherits from two interfaces/classes that
+both define the same method, creating ambiguity about which implementation to use.
+
+Interface A
+        default void hello()
+       /            \
+  Interface B      Interface C
+  default void hello()  default void hello()
+       \            /
+        Class D (ambiguous!)
+
+Problem:
+-------
+interface A {
+    default void hello() {
+        System.out.println("Hello from A");
+    }
+}
+
+interface B extends A {
+    default void hello() {
+        System.out.println("Hello from B");
+    }
+}
+
+interface C extends A {
+    default void hello() {
+        System.out.println("Hello from C");
+    }
+}
+
+// ❌ Compile Error — ambiguous — which hello() to use?
+class D implements B, C {
+}
+
+Java's 3 Resolution Rules: Java resolves diamond conflicts using these rules in order:
+Rule 1 — Classes win over Interfaces
+------
+If a superclass provides a concrete method, it wins over any interface default.
+
+class Base {
+    public void hello() {
+        System.out.println("Hello from Base class");
+    }
+}
+
+interface A {
+    default void hello() {
+        System.out.println("Hello from A");
+    }
+}
+
+// Base class method wins — no ambiguity
+class D extends Base implements A {
+}
+
+new D().hello(); // "Hello from Base class"
+
+Rule 2 — Most Specific Interface Wins: one interface extends another, the more specific (child) interface wins.
+
+interface A {
+    default void hello() {
+        System.out.println("Hello from A");
+    }
+}
+
+interface B extends A {
+    default void hello() {
+        System.out.println("Hello from B"); // more specific
+    }
+}
+
+// B is more specific than A — B wins
+class D implements A, B {
+}
+
+new D().hello(); // "Hello from B"
+
+
+Rule 3 — Explicitly Override (Mandatory): If two sibling interfaces (neither extends the other) define the same default, the implementing class must override and resolve manually.
+------
+interface B {
+    default void hello() {
+        System.out.println("Hello from B");
+    }
+}
+
+interface C {
+    default void hello() {
+        System.out.println("Hello from C");
+    }
+}
+
+class D implements B, C {
+
+    @Override
+    public void hello() {
+        // Option 1: Custom implementation
+        System.out.println("Hello from D");
+
+        // Option 2: Explicitly delegate to B
+        B.super.hello();
+
+        // Option 3: Explicitly delegate to C
+        C.super.hello();
+
+        // Option 4: Call both
+        B.super.hello();
+        C.super.hello();
+    }
+}

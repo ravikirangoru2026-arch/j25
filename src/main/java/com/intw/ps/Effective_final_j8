@@ -1,0 +1,42 @@
+1) Effective final:
+
+In Java, effectively final refers to a local variable or parameter that is never assigned a new value after its initial
+assignment — even though it's not explicitly declared with the final keyword.
+
+Introduced in Java 8, it allows lambdas and anonymous inner classes to capture local variables without requiring the final
+keyword boilerplate — as long as the variable is never reassigned.
+
+
+Assigned once, never changed
+Declared and assigned separately (once)
+
+Lambdas and anonymous classes capture a copy of the local variable. If the variable could change after capture,
+the copy would be stale — leading to inconsistency. Enforcing (effective) finality avoids this.
+
+// Explicitly final (old style)
+final String name = "Alice";
+Runnable r = () -> System.out.println(name); // OK
+
+// Effectively final (Java 8+) — no 'final' keyword, but never reassigned
+String name = "Alice";
+Runnable r = () -> System.out.println(name); // Also OK
+
+// NOT effectively final — reassignment breaks it
+String name = "Alice";
+name = "Bob"; // reassigned!
+Runnable r = () -> System.out.println(name); // Compile error
+
+
+
+// Common pitfall in loops
+for (int i = 0; i < 5; i++) {
+    // 'i' is NOT effectively final — it's modified each iteration
+    new Thread(() -> System.out.println(i)).start(); // Compile error
+}
+
+
+// Fix: capture in a local effectively final variable
+for (int i = 0; i < 5; i++) {
+    int index = i; // effectively final
+    new Thread(() -> System.out.println(index)).start(); // OK
+}
