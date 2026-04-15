@@ -13,7 +13,7 @@ public enum DBConnectionENM {
     //In Java enums, all constructors are implicitly private —
     // the compiler enforces it. Writing private is redundant, but allowed.
 
-    DBConnectionENM() {
+   private DBConnectionENM() {
         try {
             this.connection = DriverManager.getConnection("jdbc:postgresql://localhost/db", "user", "pass");
         } catch (SQLException e) {

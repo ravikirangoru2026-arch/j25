@@ -26,5 +26,12 @@ public class StudentDemo {
         ts1.add(s3);
         ts1.add(s4);
         System.out.println(ts1);
+
+        TreeSet<Student> ts2= new TreeSet<>((o1,o2)-> o1.getAddr().compareTo(o2.getAddr()));
+        ts2.add(s1);
+        ts2.add(s2);
+        ts2.add(s3);
+        ts2.add(s4);
+        System.out.println(ts2);
     }
 }
