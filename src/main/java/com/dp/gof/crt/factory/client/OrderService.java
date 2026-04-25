@@ -1,8 +1,8 @@
-package com.dp.gof.crt.factory0.client;
+package com.dp.gof.crt.factory.client;
 
-import com.dp.gof.crt.factory0.contract.PaymentProcessor;
-import com.dp.gof.crt.factory0.enums.PaymentTypes;
-import com.dp.gof.crt.factory0.factory.PaymentFactory;
+import com.dp.gof.crt.factory.contract.PaymentProcessor;
+import com.dp.gof.crt.factory.enums.PaymentTypes;
+import com.dp.gof.crt.factory.factory.PaymentFactory;
 
 public class OrderService {
     public void processPayment(PaymentTypes type, double amount) {

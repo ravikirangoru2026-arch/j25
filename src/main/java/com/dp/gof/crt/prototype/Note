@@ -1,0 +1,32 @@
+Prototype Design Pattern
+========================
+"Instead of creating a new object from scratch, clone an existing one and tweak only what's different."
+Core idea: Use an existing object as a blueprint. Copy it, mutate the copy — never touch the original.
+
+Avoid when: Objects are cheap to create and have no shared base state — cloning adds complexity with no benefit.
+
+Built-in Prototype in Java & Spring Boot
+----------------------------------------
+// Object.clone() — base prototype mechanism
+// Every Java object inherits clone() from Object
+
+// @Scope("prototype") — Spring's built-in prototype pattern
+// New instance created every time bean is requested
+
+@Component
+@Scope("prototype")          // Spring creates fresh copy per injection
+public class ReportGenerator {
+    private String reportName;
+    private LocalDate generatedAt;
+    // each caller gets its own independent instance
+}
+
+// BeanDefinition cloning internally
+// ApplicationContext.getBean() with prototype scope = clone per call
+
+// ModelMapper / BeanUtils — prototype-style copying
+BeanUtils.copyProperties(source, target);  // Spring's shallow copy utility
+
+
+
+

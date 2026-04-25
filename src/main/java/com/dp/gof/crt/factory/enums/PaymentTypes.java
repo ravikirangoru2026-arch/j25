@@ -1,4 +1,4 @@
-package com.dp.gof.crt.factory0.enums;
+package com.dp.gof.crt.factory.enums;
 
 public enum PaymentTypes {
     CREDIT,

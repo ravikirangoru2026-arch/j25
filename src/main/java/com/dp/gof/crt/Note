@@ -10,7 +10,10 @@ They are needed & help to:
 
 1) Singleton: it ensures that a class has only one instance and provide a global access point to it.
 Ex: Loggers, Database Connection Pool, Config Manager, Cache, Thread Pool.. etc.
-2) Factory Method
-3) Abstract Factory
-4) Builder
-5) Prototype
+2) Factory Method: - "Tell me what you want, I'll create it for you — you don't need to know how it's made."
+Core idea: Move object creation logic out of client code into a dedicated factory.
+
+3) Abstract Factory: Move object creation logic out of client code into a dedicated factory.
+4) Builder: Construct a complex object step-by-step, and only build it when you're ready.
+5) Prototype:Instead of creating a new object from scratch, clone an existing one and tweak only what's different.
+6) Object Pool: Object Pool Design Pattern

@@ -1,7 +1,7 @@
-package com.dp.gof.crt.factory0.concrete;
+package com.dp.gof.crt.factory.concrete;
 
-import com.dp.gof.crt.factory0.enums.PaymentTypes;
-import com.dp.gof.crt.factory0.contract.PaymentProcessor;
+import com.dp.gof.crt.factory.enums.PaymentTypes;
+import com.dp.gof.crt.factory.contract.PaymentProcessor;
 
 public class CryptoPayment implements PaymentProcessor {
     @Override

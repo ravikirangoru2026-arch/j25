@@ -116,3 +116,4 @@ public class OrderService {
 }
 
 ** Adding a new payment type = just create a new @Service class. Nothing else changes.
+** Golden Rule: Factory should return an interface, never a concrete class. Client should never need instanceof after getting the object.

@@ -1,10 +1,10 @@
-package com.dp.gof.crt.factory0.factory;
+package com.dp.gof.crt.factory.factory;
 
-import com.dp.gof.crt.factory0.concrete.CreditCardPayment;
-import com.dp.gof.crt.factory0.concrete.CryptoPayment;
-import com.dp.gof.crt.factory0.concrete.UpiPayment;
-import com.dp.gof.crt.factory0.enums.PaymentTypes;
-import com.dp.gof.crt.factory0.contract.PaymentProcessor;
+import com.dp.gof.crt.factory.concrete.CreditCardPayment;
+import com.dp.gof.crt.factory.concrete.CryptoPayment;
+import com.dp.gof.crt.factory.concrete.UpiPayment;
+import com.dp.gof.crt.factory.enums.PaymentTypes;
+import com.dp.gof.crt.factory.contract.PaymentProcessor;
 
 public class PaymentFactory {
     public static PaymentProcessor create(PaymentTypes type) {

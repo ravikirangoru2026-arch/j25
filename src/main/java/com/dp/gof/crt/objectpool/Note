@@ -1,0 +1,37 @@
+Object Pool Design Pattern
+--------------------------
+"Instead of creating and destroying objects repeatedly, keep a pool of reusable objects — borrow, use, return."
+
+Why Do We Need It?
+Object creation is expensive (DB conn, threads). So, Create once, reuse many times
+
+When To Use?
+DB connections
+Thread management
+Socket/HTTP connections
+Heavy parser/serializer instances
+Game objects (bullets, particles)
+
+Built-in Object Pools in Java & Spring
+======================================
+
+// Thread pool — most common Object Pool usage
+ExecutorService pool = Executors.newFixedThreadPool(10);
+pool.submit(() -> System.out.println("Task"));
+
+// ForkJoinPool — parallel task pool
+ForkJoinPool fjPool = new ForkJoinPool(4);
+
+// Integer cache — JVM pools -128 to 127
+Integer a = 127;
+Integer b = 127;
+System.out.println(a == b); // true — same pooled object
+
+Integer x = 128;
+Integer y = 128;
+System.out.println(x == y); // false — outside pool range, new objects
+
+// String pool
+String s1 = "hello";
+String s2 = "hello";
+System.out.println(s1 == s2); // true — same pooled string literal
