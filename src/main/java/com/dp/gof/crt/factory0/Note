@@ -1,0 +1,118 @@
+Factory Design Pattern:
+- "Tell me what you want, I'll create it for you — you don't need to know how it's made."
+Core idea: Move object creation logic out of client code into a dedicated factory.
+
+With Factory
+    Client depends only on interface
+    Creation centralized in one place
+    Add new type = modify only factory
+    Easy to mock/swap implementations
+    Factory is open for extension
+
+When To Use Factory?
+    Object creation logic is complex or conditional
+    You need to decouple client from concrete implementations
+    Multiple implementations of same interface exist
+    Object type determined at runtime
+    You want centralized control over object creation
+
+Avoid when: Only one implementation exists and creation is trivial — factory adds unnecessary complexity.
+
+Built-in Factories in Java
+    // NumberFormat Factory
+    NumberFormat fmt = NumberFormat.getInstance(Locale.US);
+    NumberFormat currency = NumberFormat.getCurrencyInstance();
+
+    // Calendar Factory
+    Calendar cal = Calendar.getInstance();
+
+    // Collections Factory
+    List<String> list = List.of("a", "b");          // Java 9+
+    Set<String> set = Set.of("x", "y");
+
+    // Path Factory
+    Path path = Path.of("/usr/local/bin");
+
+    // Optional Factory
+    Optional<String> opt = Optional.of("value");
+    Optional<String> empty = Optional.empty();
+
+    // ExecutorService Factory
+    ExecutorService pool = Executors.newFixedThreadPool(10);
+    ExecutorService cached = Executors.newCachedThreadPool();
+
+Built-in Factories in SpringBoot
+    // BeanFactory — core Spring factory
+    BeanFactory factory = new ClassPathXmlApplicationContext("beans.xml");
+
+    // LoggerFactory (SLF4J)
+    Logger log = LoggerFactory.getLogger(MyService.class);
+
+============
+Try Springboot way to implement Factory pattern.
+
+Version 4 — Registry-Based Factory (Production-Ready, fully OCP compliant)
+// Registry — no switch, no if-else, fully extensible
+@Component
+public class PaymentProcessorFactory {
+
+    private final Map<String, PaymentProcessor> registry = new ConcurrentHashMap<>();
+
+    // Auto-registers all PaymentProcessor beans
+    public PaymentProcessorFactory(List<PaymentProcessor> processors) {
+        processors.forEach(p -> registry.put(p.getType().toUpperCase(), p));
+    }
+
+    public PaymentProcessor getProcessor(String type) {
+        PaymentProcessor processor = registry.get(type.toUpperCase());
+        if (processor == null) {
+            throw new IllegalArgumentException("No processor registered for: " + type);
+        }
+        return processor;
+    }
+
+    // Runtime extensibility
+    public void registerProcessor(String type, PaymentProcessor processor) {
+        registry.put(type.toUpperCase(), processor);
+    }
+}
+
+// Processors as Spring beans — auto-registered
+@Service
+public class CreditCardPayment implements PaymentProcessor {
+    @Override public String getType() { return "CREDIT"; }
+    @Override public void process(double amount) {
+        System.out.println("Credit Card: ₹" + amount);
+    }
+}
+
+@Service
+public class UpiPayment implements PaymentProcessor {
+    @Override public String getType() { return "UPI"; }
+    @Override public void process(double amount) {
+        System.out.println("UPI: ₹" + amount);
+    }
+}
+
+// Adding new payment type — ZERO changes to factory or client!
+@Service
+public class NetBankingPayment implements PaymentProcessor {
+    @Override public String getType() { return "NETBANKING"; }
+    @Override public void process(double amount) {
+        System.out.println("Net Banking: ₹" + amount);
+    }
+}
+
+// Clean service
+@Service
+@RequiredArgsConstructor
+public class OrderService {
+
+    private final PaymentProcessorFactory factory;
+
+    public void processPayment(String type, double amount) {
+        factory.getProcessor(type).process(amount);
+    }
+}
+
+** Adding a new payment type = just create a new @Service class. Nothing else changes.
