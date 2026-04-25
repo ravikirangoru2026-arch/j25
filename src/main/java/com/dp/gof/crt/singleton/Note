@@ -1,0 +1,23 @@
+Singleton ensures only one instance of a class exists throughout the application lifecycle.Use cases:
+    Database connection pools
+    Configuration managers
+    Logger instances
+    Cache managers
+    Thread pools
+
+When To Create Singleton?
+    Shared resource access
+    Heavy object initialization
+    Global state management
+    Stateless utility services
+
+Built-in Singletons in Java & Spring Boot
+Java:
+    Runtime.getRuntime()
+    System class internals
+    Collections.EMPTY_LIST
+
+Spring Boot:
+    Every @Bean, @Service, @Repository, @Component is singleton-scoped by default
+    ApplicationContext itself is a singleton
+

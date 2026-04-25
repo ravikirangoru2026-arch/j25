@@ -1,19 +1,18 @@
-package org.example.dp.stn;
+package com.dp.gof.crt.singleton;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
 //Enum Singleton ✅ Most Effective (Josh Bloch's recommendation)
-public enum DBConnectionENM {
+public enum EnumSingleton {
     INSTANCE;
     private final Connection connection;
-
 
     //In Java enums, all constructors are implicitly private —
     // the compiler enforces it. Writing private is redundant, but allowed.
 
-   private DBConnectionENM() {
+    private EnumSingleton() {
         try {
             this.connection = DriverManager.getConnection("jdbc:postgresql://localhost/db", "user", "pass");
         } catch (SQLException e) {
@@ -25,12 +24,12 @@ public enum DBConnectionENM {
         return connection;
     }
 
-
-    /*
-├── JVM guarantees single instance — no double-check needed
-├── Thread-safe by default — no synchronization code
-├── Serialization safe — JVM handles it natively
-├── Reflection-proof — can't call private constructor via reflection
-└── Simplest code — zero boilerplate
-     */
+    public void doDbHealthCheck() {
+        System.out.println("DB Health Check: success");
+    }
+    // ✅ Thread-safe by JVM
+    // ✅ Serialization-safe (no duplicate on deserialization)
+    // ✅ Reflection-safe (JVM prevents enum instantiation)
 }
+
+
