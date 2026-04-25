@@ -1,0 +1,5 @@
+1) What is RMA?
+RMA stands for Rule Maintenance Application.
+In the FICO Blaze Advisor ecosystem,
+it is a web-based portal that allows business users (like risk managers, analysts, or policy experts) to view,
+edit, and manage business rules without touching the underlying Java code or opening a technical IDE.

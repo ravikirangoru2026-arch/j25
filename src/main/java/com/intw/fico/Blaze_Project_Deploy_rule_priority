@@ -1,0 +1,42 @@
+4. How do you deploy a Blaze Advisor project as a Decision Service?
+Using the Deployment Wizard, you can wrap your rule project into a "Decision Service." This can be deployed as:
+A POJO (Plain Old Java Object) for direct inclusion in a Java app.
+A Web Service (SOAP/REST) for cross-platform access.
+An EJB (Enterprise Java Bean) for JEE environments.
+
+5. How do you handle "Rule Prioritization" in Blaze?
+Rules can be prioritized using a numerical value.
+Static Priority: Assigned during authoring.
+Dynamic Priority: Calculated at runtime based on the data.
+Agenda: The engine maintains an "Agenda" of rules whose conditions are met.
+It executes them based on the conflict resolution strategy (e.g., highest priority first).
+
+#1.The Agenda is a temporary list maintained by the Blaze Rule Engine.
+When an object (data) enters the engine and satisfies a rule's conditions,
+that rule doesn't fire immediately. Instead, an "activation" (a pointer to that rule and that data)
+is placed on the Agenda.
+
+Example: You have a rule: If Purchase > $1000, Give 10% Discount.
+If you pass 5 transactions into the engine that are all over $1000,
+the Agenda will hold 5 "activations" waiting to be processed.
+
+#2. Static Priority (The Pre-assigned Rank)
+Static Priority is a fixed number you assign to a rule when you are designing it in the Builder.
+It never changes during the execution of the program.
+
+Simple Term: A permanent "Importance Score."
+
+The Rule: Higher numbers fire first.
+
+Example:
+Rule A (Priority 10): Apply Government Tax.
+Rule B (Priority 5): Apply Seasonal Discount.
+Result: The engine will always calculate the tax before the discount because Rule A has a higher static priority.
+
+#3. Dynamic Priority (The Contextual Rank)
+Dynamic Priority is a rank calculated at runtime using a formula or a variable.
+The priority changes based on the data currently being processed.
+
+Simple Term: Priority that "adjusts on the fly."
+Rule: Process Ticket.
+Dynamic Priority Formula: (Current_Date - Ticket_Creation_Date) * Customer_Tier_Multiplier

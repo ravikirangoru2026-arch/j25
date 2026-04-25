@@ -1,0 +1,33 @@
+1. What is the difference between a Business Object Model (BOM) and an Execution Object Model (EOM) / ROM (Runtime Object Model)?
+BOM: A logical representation of the business data.
+It is what the business users see in the Rule Maintenance Application (RMA).
+It uses business-friendly terms.
+
+Current Balance
+Credit Score
+Account is Active
+
+
+EOM: The physical technical model (usually Java classes or XML schemas) that the rule engine uses during execution.
+Blaze Advisor maps the BOM to the EOM to execute logic against real data.
+
+public class Cust_Acct_Rec {
+    private double cur_bal;
+    private int credit_scr_val;
+    private boolean is_active_flg;
+
+    // Getters and Setters...
+}
+
+Rule Java:
+---------
+if (custAcctRec.getCredit_scr_val() > 700 && custAcctRec.isIs_active_flg()) {
+    custAcctRec.setStatus("Approved");
+}
+
+
+The Business Rule (Using BOM):
+-----------------------------
+If the Credit Score is greater than 700
+And the Account is Active is true
+Then set Status to "Approved"

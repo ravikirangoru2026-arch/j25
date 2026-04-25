@@ -1,0 +1,7 @@
+3. What are "Decision Metaphors"? Name a few.
+Decision Metaphors are different ways to represent business logic visually. Common ones include:
+
+Decision Tables: Best for logic with many conditions leading to specific actions.
+Decision Trees: Best for hierarchical, branching logic.
+Scorecards: Used for calculating a cumulative score based on weighted attributes (common in credit risk).
+Rule Flows: Define the sequence or order in which different rule sets are executed.

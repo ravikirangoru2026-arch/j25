@@ -10,7 +10,7 @@ public class EffectiveFinal {
 
     private static void case_p_1() {
         final String name = "ravi"; //Explicitly final (old style)
-        Runnable r = () -> System.out.println(name); //name is errective final as used in Lambda or anonymous inner class
+        Runnable r = () -> System.out.println(name); //name is effective final as used in Lambda or anonymous inner class
         Thread t = new Thread(r);
         t.start();
     }

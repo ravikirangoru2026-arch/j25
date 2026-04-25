@@ -1,0 +1,133 @@
+
+6. Explain the difference between "Sequential" and "Rete" execution modes.
+Rete Mode: Best for complex, interconnected rules where one rule’s action might trigger another rule.
+
+Sequential Mode: The engine evaluates rules in a top-down, one-pass manner.
+It is much faster and uses less memory but doesn't support "inferencing" (where rules trigger other rules).
+
+7. How do you debug rules in Blaze Advisor?
+Rule Engine Trace: Generates a log showing which rules were evaluated, which "fired," and
+the state of the data at each step.
+Decision Tracing: Provides a high-level audit trail of how a specific decision was reached for compliance and debugging.
+brUnit: The built-in unit testing framework to validate rule logic against specific test cases.
+
+8. What are "Functions" and "Rule Scripts" (SRL)?
+SRL (Structured Rule Language): The native scripting language of Blaze.
+Rule Functions: Reusable blocks of SRL code that can be called from rules or other functions.
+They are used to perform complex calculations or data manipulations that aren't easily expressed in a table or tree.
+
+9. How do you handle database interactions within Blaze?
+While you can use Query Business Objects to fetch data directly via JDBC,
+the best practice is to fetch the data in the Java "wrapper" layer and pass it into the engine as a collection of objects.
+This keeps the rule engine focused on logic rather than I/O overhead.
+
+## Scenario-Based Question
+---------------------------
+"If a customer reports that a specific rule isn't firing, even though the data seems correct, what is your first step?"
+Answer: First, I would check the Rule Trace to see if the rule's conditions were even evaluated.
+If they were, I’d check the data values against the condition patterns.
+ If the rule is in a Rule Flow, I'd verify if the flow reached that specific task.
+ Finally, I’d check for Conflict Resolution—perhaps a higher-priority rule fired and
+ removed the object from the working memory.
+
+
+
+Difference between FICO Blaze 7.5 and 7.6:
+
+## 1. Machine Learning & PMML Integration
+7.5: Introduced the ability to import tree ensemble models using PMML (Predictive Model Markup Language).
+It focused on visualizing these models within the IDE.
+
+7.6: Expanded PMML support significantly. While 7.5 laid the groundwork,
+7.6 improved the handling of more complex mining models.
+
+
+## 2. Cloud-Native Alignment
+7.5: Primarily an on-premise focused release, though it began the "warp speed"
+effort to match features with FICO Decision Modeler (the cloud version).
+
+7.6: Further bridged the gap between the on-premise IDE and the cloud.
+It optimized the Deployment Wizard to make it easier to package rules as Decision Services that
+can be deployed into containerized environments (Docker/Kubernetes) or directly pushed to the FICO Platform.
+
+## 3. Performance & Large Table Handling
+
+7.5: Introduced massive improvements for very large lookup tables (tens of thousands of rows).
+It improved the compilation time and reduced the memory footprint for these tables.
+
+7.6: Refined the execution speed of these large tables even further, specifically
+optimizing how the Rete algorithm handles large-scale data updates against static lookup data.
+
+
+Any alternatives to Fico Blaze Advisor?
+=======================================
+Drools (Red Hat Decision Manager)- Open source: DRL (Drools Rule Language) or use Decision Tables.
+
+
+==================================
+ArcelorMittal uses rule engines for
+	complex logic like logistics routing, quality control grading, and supply chain pricing.
+
+
+1. How do you handle a scenario where rules are conflicting in a production environment?
+Answer: "In FICO Blaze, I would first check the Agenda and evaluate the Static Priorities.
+If two rules are firing when they shouldn't, I’d investigate the Conflict Resolution strategy.
+For a manufacturing fix, I prefer explicit priorities or using 'Exclusive' rule sets to
+ensure only one logical path is taken. I would use a Rule Engine Trace to identify the exact data state
+that caused the overlap and then refine the BOM conditions to make them mutually exclusive."
+
+Q: Why use a Rule Engine instead of standard Java if-else for steel production logic?
+Answer: "Externalizing logic into a Rule Engine allows the business team to update production parameters—like quality
+thresholds—via the RMA without requiring a full Java re-deployment.
+It decouples the volatile business policy from the stable backend infrastructure,
+which is critical for 24/7 manufacturing operations."
+
+Q: How do you ensure a REST API remains responsive during a massive data spike (e.g., sensor data from a mill)?
+Answer: "I implement asynchronous processing using Spring's @Async or a message queue like Kafka/RabbitMQ.
+For the API itself, I use Pagination for GET requests and Rate Limiting to prevent system exhaustion.
+I also ensure the connection pool (HikariCP) is tuned to handle high-concurrency without leaking connections."
+
+Q: What is the difference between PUT and PATCH in your recent projects?
+Answer: "I use PUT for a complete replacement of a resource (e.g., updating an entire 'Shipment' record).
+I use PATCH for partial updates (e.g., just updating the 'Status' of a furnace).
+Using PATCH is more efficient in manufacturing apps because it reduces the payload size over
+potentially constrained industrial networks."
+
+Q: How would you optimize a slow-running query that calculates monthly production totals?
+
+Answer: "First, I’d check the Execution Plan to find full table scans.
+I would ensure proper Indexing on date columns and 'ProductionID'.
+Since this is an analytical query, I might suggest a Materialized View or a summary table
+that is updated nightly to avoid calculating totals in real-time on the live transaction table."
+
+
+Q: Explain ACID properties in the context of a steel order transaction.
+Answer: "When an order is placed:
+
+Atomicity: Either the entire order is saved and inventory is reduced, or nothing happens.
+
+Consistency: The inventory count cannot go below zero.
+
+Isolation: Two different clerks shouldn't be able to reserve the same slab of steel simultaneously.
+
+Durability: Once the order is 'Committed,' a power failure at the plant won't lose that data."
+
+
+Q: How do you handle a 'Sprint Carryover' (tasks not finished in a sprint)?
+Answer: "In the Retrospective,
+I analyze why it wasn't finished—was it a 'blocker' or poor estimation?
+I move the unfinished task back to the Product Backlog and re-prioritize it with the Product Owner.
+I don't just automatically move it to the next sprint; we must ensure it's still the highest priority."
+
+Q: What is your role in a Daily Stand-up?
+Answer: "I keep it brief: what I did yesterday, what I’m doing today, and—most importantly—any impediments.
+For example, if I'm waiting on a DB schema change from the DBA,
+I flag it immediately so the Scrum Master can help clear the path."
+
+
+How to you design Fico Balze Advisor project?
+How to you improve performance in Fico Balze Advisor project?
+How to you communicate external system through Fico Balze Advisor project?
+
+
+

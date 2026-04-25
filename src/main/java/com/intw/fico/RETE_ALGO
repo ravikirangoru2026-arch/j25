@@ -1,0 +1,25 @@
+2. Explain the "Rete Algorithm" and its relevance to Blaze Advisor.
+Rete Algorithm (pronounced REE-tee), think of it as a filter system rather than a "top-to-bottom" search.
+
+In a standard Java for-loop,
+you check every object against every if statement.
+If you have 10,000 objects and 100 rules, that is 1,000,000 checks.
+The Rete algorithm avoids this by remembering which objects already passed certain tests.
+
+## A Simple Example
+Suppose we have two rules for a banking system:
+Rule 1: IF Account.balance > 1000 AND Account.type == "Savings", THEN Apply Bonus.
+Rule 2: IF Account.balance > 1000 AND Account.status == "New", THEN Send Welcome Email.
+
+### 1. How Rete Organizes This
+Instead of checking balance > 1000 twice, Rete creates a single node for that condition.
+Top Node (Alpha): Is Balance > 1000?
+Branch A: Is Type == "Savings"? -> Rule 1
+Branch B: Is Status == "New"? -> Rule 2
+
+
+Blaze Advisor uses an optimized version of the Rete algorithm for pattern matching.
+It builds a network of nodes that represent rule conditions.
+When data (facts) enter the engine, they flow through this network.
+This allows the engine to avoid re-evaluating rules every time a fact changes,
+making it highly efficient for complex rule sets.
